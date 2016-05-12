@@ -1,14 +1,14 @@
-﻿namespace TravellingSalesman
+﻿namespace TravellingSalesmanWithAnnealing
 {
   using System.Collections.Generic;
+  using System.Linq;
 
   public class Tour
   {
     // Holds our tour of cities
-    private readonly List<City> tour = new List<City>();
+    private readonly List<City> tour = new List<City>();    
 
     // Cache
-    private double fitness = 0;
     private double distance = 0;
 
     // Constructs a blank tour
@@ -20,10 +20,14 @@
       }
     }
 
-    public Tour(List<City> tour)
+    // Constructs a tour from another tour
+    public Tour(IEnumerable<City> tour)
     {
-      this.tour = tour;
+      this.tour = tour.Select(c => c.Clone()).ToList();
     }
+
+    // Returns tour information
+    public List<City> GetTour => this.tour;
 
     // Creates a random individual
     public void GenerateIndividual()
@@ -49,19 +53,8 @@
     {
       this.tour[tourPosition] = city;
       
-      // If the tours been altered we need to reset the fitness and distance
-      this.fitness = 0;
+      // If the tours been altered we need to reset the distance      
       this.distance = 0;
-    }
-
-    // Gets the tours fitness
-    public double GetFitness()
-    {
-      if (this.fitness == 0)
-      {
-        this.fitness = 1 / (double)this.GetDistance();
-      }
-      return this.fitness;
     }
 
     // Gets the total distance of the tour

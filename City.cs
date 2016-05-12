@@ -1,4 +1,4 @@
-﻿namespace TravellingSalesman
+﻿namespace TravellingSalesmanWithAnnealing
 {
   using System;
 
@@ -33,6 +33,11 @@
       var distance = Math.Sqrt(xDistance * xDistance + yDistance * yDistance);
 
       return distance;
+    }
+
+    public City Clone()
+    {
+      return new City(this.X, this.Y);
     }
 
     public override string ToString()

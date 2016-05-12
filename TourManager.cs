@@ -1,4 +1,4 @@
-﻿namespace TravellingSalesman
+﻿namespace TravellingSalesmanWithAnnealing
 {
   using System.Collections.Generic;
 

@@ -1,9 +1,19 @@
-﻿namespace TravellingSalesman
+﻿namespace TravellingSalesmanWithAnnealing
 {
   using System;
   
   public class Program
   {
+    // Calculate the acceptance probability
+    public static double AcceptanceProbability(double energy, double newEnergy, double temperature)
+    {
+      // If the new solution is better, accept it
+      // If the new solution is worse, calculate an acceptance probability
+      return newEnergy < energy 
+        ? 1.0 
+        : Math.Exp((energy - newEnergy) / temperature);
+    }
+
     public static void Main(string[] args)
     {
       // Create and add our cities
@@ -48,23 +58,61 @@
       var city20 = new City(160, 20);
       TourManager.AddCity(city20);
 
-      // Initialize population
-      var pop = new Population(50, true);
-      Console.WriteLine("Initial distance: " + pop.GetFittest().GetDistance());
+      double temp = 10000;
 
-      // Evolve population for 100 generations
-      var ga = new GeneticAlgorithm(0.015, 10, true);
-      pop = ga.EvolvePopulation(pop);
-      for (var i = 0; i < 100; i++)
+      // Cooling rate
+      var coolingRate = 0.0015;
+
+      // Initialize intial solution
+      var currentSolution = new Tour();
+      currentSolution.GenerateIndividual();
+
+      Console.WriteLine("Initial solution distance: " + currentSolution.GetDistance());
+
+      // Set as current best
+      var best = new Tour(currentSolution.GetTour);
+      var random = new Random();
+
+      // Loop until system has cooled
+      while (temp > 1)
       {
-        pop = ga.EvolvePopulation(pop);
+        // Create new neighbour tour
+        Tour newSolution = new Tour(currentSolution.GetTour);
+
+        // Get a random positions in the tour
+        int tourPos1 = (int)(newSolution.TourSize() * random.NextDouble());
+        int tourPos2 = (int)(newSolution.TourSize() * random.NextDouble());
+
+        // Get the cities at selected positions in the tour
+        City citySwap1 = newSolution.GetCity(tourPos1);
+        City citySwap2 = newSolution.GetCity(tourPos2);
+
+        // Swap them
+        newSolution.SetCity(tourPos2, citySwap1);
+        newSolution.SetCity(tourPos1, citySwap2);
+
+        // Get energy of solutions
+        var currentEnergy = currentSolution.GetDistance();
+        var neighbourEnergy = newSolution.GetDistance();
+
+        // Decide if we should accept the neighbour
+        if (AcceptanceProbability(currentEnergy, neighbourEnergy, temp) > random.NextDouble())
+        {
+          currentSolution = new Tour(newSolution.GetTour);
+        }
+
+        // Keep track of the best solution found
+        if (currentSolution.GetDistance() < best.GetDistance())
+        {
+          best = new Tour(currentSolution.GetTour);
+        }
+
+        // Cool system
+        temp *= 1 - coolingRate;
       }
 
-      // Print final results
-      Console.WriteLine("Finished");
-      Console.WriteLine("Final distance: " + pop.GetFittest().GetDistance());
-      Console.WriteLine("Solution:");
-      Console.WriteLine(pop.GetFittest());
+      Console.WriteLine("Final solution distance: " + best.GetDistance());
+      Console.WriteLine("Tour: " + best);
 
       Console.ReadLine();
     }
